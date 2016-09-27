@@ -22,4 +22,7 @@ board.on("ready", function () {
       drive.stop()
     })
   })
+
+  var photo = new five.Light('b2')
+  photo.on('change', () => console.log(photo.level))
 })
