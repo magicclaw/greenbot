@@ -217,7 +217,7 @@ board.on('ready', function () {
       // console.log(`leftHit(${leftHit}), rightHit(${rightHit})`)
       //console.log(state.name + ' --> ' + newState.name)
       state = newState
-      state.go(leftHit, rightHit)
+      //state.go(leftHit, rightHit)
     }
   }
 })
