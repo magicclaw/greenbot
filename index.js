@@ -11,22 +11,34 @@ board.on('ready', function () {
   const drive = driveModule(new five.Motor(['b5', 'b4', 'b3']), new five.Motor(['a5', 'a4', 'a3']), true)
   const rightLight = new five.Light('b1')
   const leftLight = new five.Light('b2')
+  const toggle = new five.Switch('a6')
 
   this.repl.inject({
-    drive: drive
+    drive: drive,
+    toggle: toggle
   })
 
   const TURN_SPEED = 0.35
-  const FORWARD_SPEED = .22 // .2 is the minimum; .26 seems to work well; .3 seems to be an upper limit on this to detect the line in time to change directions
-  const LIGHT_THRESHOLD = .9
+  const FORWARD_SPEED = 0.22 // .2 is the minimum; .26 seems to work well; .3 seems to be an upper limit on this to detect the line in time to change directions
+  const LIGHT_THRESHOLD = 0.9
   const TURN_MINIMUM_MS = 100
   const STARTUP_WAIT_TIME = 500
 
   this.loop(1, mainLoop)
 
-  const isLineFollow = false
   let courseLeft
   let courseRight
+  let isLineFollow
+
+  toggle.on('close', function () {
+    console.log('Not the line follow course')
+    isLineFollow = false
+  })
+
+  toggle.on('open', function () {
+    console.log('Line Follow Course')
+    isLineFollow = true
+  })
 
   const STATE = {
     pause: {
