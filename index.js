@@ -16,10 +16,10 @@ board.on('ready', function () {
     drive: drive
   })
 
-  const TURN_SPEED = 0.3
-  const FORWARD_SPEED = .26 // .2 is the minimum; .26 seems to work well; .3 seems to be an upper limit on this to detect the line in time to change directions
+  const TURN_SPEED = 0.35
+  const FORWARD_SPEED = .20 // .2 is the minimum; .26 seems to work well; .3 seems to be an upper limit on this to detect the line in time to change directions
   const LIGHT_THRESHOLD = .9
-  const TURN_MINIMUM_MS = 300
+  const TURN_MINIMUM_MS = 200
   const STARTUP_WAIT_TIME = 500
 
   this.loop(1, mainLoop)
@@ -69,6 +69,7 @@ board.on('ready', function () {
     right: {
       name: 'right',
       getNextState: function (leftHit, rightHit) {
+        if (leftHit && rightHit)
         if (leftHit) {
           this.rightTurnDone = false
           this.turningRight = false
