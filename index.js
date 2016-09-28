@@ -19,7 +19,7 @@ board.on('ready', function () {
   const TURN_SPEED = 0.35
   const FORWARD_SPEED = .20 // .2 is the minimum; .26 seems to work well; .3 seems to be an upper limit on this to detect the line in time to change directions
   const LIGHT_THRESHOLD = .9
-  const TURN_MINIMUM_MS = 200
+  const TURN_MINIMUM_MS = 100
   const STARTUP_WAIT_TIME = 500
 
   this.loop(1, mainLoop)
@@ -45,6 +45,12 @@ board.on('ready', function () {
     left: {
       name: 'left',
       getNextState: function (leftHit, rightHit) {
+        if (leftHit && rightHit) {
+          if (acuteEscapeDir !== STATE.left) {
+            return acuteEscapeDir
+          }
+          // keep turning
+        }
         if (rightHit) {
           this.leftTurnDone = false
           this.turningLeft = false
@@ -69,7 +75,12 @@ board.on('ready', function () {
     right: {
       name: 'right',
       getNextState: function (leftHit, rightHit) {
-        if (leftHit && rightHit)
+        if (leftHit && rightHit) {
+          if (acuteEscapeDir !== STATE.right) {
+            return acuteEscapeDir
+          }
+          return acuteEscapeDir
+        }
         if (leftHit) {
           this.rightTurnDone = false
           this.turningRight = false
@@ -94,10 +105,15 @@ board.on('ready', function () {
     forward: {
       name: 'forward',
       getNextState: function (leftHit, rightHit) {
+        if (leftHit && rightHit) {
+          return acuteEscapeDir
+        }
         if (leftHit) {
+          acuteEscapeDir = STATE.left
           return STATE.left
         }
         if (rightHit) {
+          acuteEscapeDir = STATE.right
           return STATE.right
         }
       },
@@ -106,6 +122,9 @@ board.on('ready', function () {
     backward: {
       name: 'backward',
       getNextState: function (leftHit, rightHit) {
+        if (leftHit && rightHit) {
+          return acuteEscapeDir
+        }
         if (!leftHit && !rightHit) {
           return STATE.stop
         }
@@ -115,6 +134,9 @@ board.on('ready', function () {
     stop: {
       name: 'stop',
       getNextState: function (leftHit, rightHit) {
+        if (leftHit && rightHit) {
+          return acuteEscapeDir
+        }
         if (!leftHit && !rightHit) {
           return STATE.forward
         }
@@ -130,18 +152,13 @@ board.on('ready', function () {
 
   let newState = null
   let state = STATE.pause
+  let acuteEscapeDir = STATE.left
   state.go()
   function mainLoop () {
     const leftHit = leftLight.level >= LIGHT_THRESHOLD
     const rightHit = rightLight.level >= LIGHT_THRESHOLD
 
-    // The following is nice to have the thing stop when you pick it up...however,
-    // this causes the car to die at the acute angle corner. We need to make the
-    // car spin if it encounters leftHit && rightHit until it gets itself free...
-    // More work to figure this out is needed...
-    const leftAndRightMaxed = leftLight.level === 1 && rightLight.level === 1
-
-    newState = leftAndRightMaxed ? STATE.stop : state.getNextState(leftHit, rightHit)
+    newState = state.getNextState(leftHit, rightHit)
     if (newState) {
       // console.log(`leftHit(${leftHit}), rightHit(${rightHit})`)
       // console.log(`leftLight(${leftLight.level}), rightLight(${rightLight.level})`)
