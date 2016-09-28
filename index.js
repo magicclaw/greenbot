@@ -31,10 +31,12 @@ board.on('ready', function () {
   let isLineFollow
 
   toggle.on('close', function () {
+    console.log('Not the line follow course')
     isLineFollow = false
   })
 
   toggle.on('open', function () {
+    console.log('Line Follow Course')
     isLineFollow = true
   })
 
