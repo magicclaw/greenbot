@@ -163,6 +163,7 @@ board.on('ready', function () {
       getNextState: function (leftHit, rightHit) {
         // back up until one of the sensors clears
         // return STATE.left
+        return STATE.stop
       },
       go: () => drive.stop()
     },
