@@ -32,6 +32,7 @@ board.on('ready', function () {
   let courseRight
   let isLineFollow // = toggle.isClosed
   let finishDetected = false
+  let finishDetectionBaseline = 1
 
   toggle.on('close', function () {
     console.log('Not the line follow course')
@@ -44,7 +45,8 @@ board.on('ready', function () {
   })
 
   finishLineLight.on('change', function () {
-    finishDetected = finishLineLight.level > 0.93
+    console.log(finishLineLight.level)
+    finishDetected = finishLineLight.level >= (finishDetectionBaseline + 0.04)
   })
 
   const STATE = {
@@ -58,6 +60,7 @@ board.on('ready', function () {
         if (!this.pausing) {
           this.pausing = true
           board.wait(STARTUP_WAIT_TIME, () => {
+            finishDetectionBaseline = finishLineLight.level
             this.pausing = false
             this.pauseDone = true
           })
@@ -217,6 +220,7 @@ board.on('ready', function () {
     const rightHit = rightLight.level >= LIGHT_THRESHOLD
     // console.log(`leftLight(${leftLight.level}), rightLight(${rightLight.level})`)
     if (finishDetected) {
+      console.log('should be stopping')
       drive.stop()
       finishLED.on()
       return
