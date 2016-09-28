@@ -24,11 +24,12 @@ board.on('ready', function () {
   const TURN_MINIMUM_MS = 100
   const STARTUP_WAIT_TIME = 500
 
-  this.loop(1, mainLoop)
+  this.loop(50, mainLoop)
 
   let courseLeft
   let courseRight
-  let isLineFollow
+  let isLineFollow // = toggle.isClosed
+  console.log('isLineFollow === undefined')
 
   toggle.on('close', function () {
     console.log('Not the line follow course')
@@ -201,14 +202,14 @@ board.on('ready', function () {
   let newState = null
   let state = STATE.pause
 
-  courseLeft = isLineFollow ? STATE.left : STATE.right
-  courseRight = isLineFollow ? STATE.right : STATE.left
 
   state.go()
   function mainLoop () {
+    courseLeft = isLineFollow ? STATE.left : STATE.right
+    courseRight = isLineFollow ? STATE.right : STATE.left
     const leftHit = leftLight.level >= LIGHT_THRESHOLD
     const rightHit = rightLight.level >= LIGHT_THRESHOLD
-    console.log(`leftLight(${leftLight.level}), rightLight(${rightLight.level})`)
+    // console.log(`leftLight(${leftLight.level}), rightLight(${rightLight.level})`)
 
     newState = state.getNextState(leftHit, rightHit)
     if (newState) {
