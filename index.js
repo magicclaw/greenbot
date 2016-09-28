@@ -62,7 +62,8 @@ board.on('ready', function () {
     console.log('Received a %s message, from %s, reporting: %s', event.type, event.class, event.message)
   })
 
-  // this.loop(50, mainLoop)
+  this.loop(50, mainLoop)
+
   const STATE = {
     pause: {
       name: 'pause',
