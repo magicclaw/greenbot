@@ -24,6 +24,10 @@ board.on('ready', function () {
 
   this.loop(1, mainLoop)
 
+  const isLineFollow = false
+  let courseLeft
+  let courseRight
+
   const STATE = {
     pause: {
       name: 'pause',
@@ -45,13 +49,13 @@ board.on('ready', function () {
     left: {
       name: 'left',
       getNextState: function (leftHit, rightHit) {
-        if (leftHit && rightHit) {
+        if (isLineFollow && leftHit && rightHit) {
           return STATE.acuteEscape
         }
         if (rightHit) {
           this.leftTurnDone = false
           this.turningLeft = false
-          return STATE.right
+          return courseRight
         }
         if (!leftHit) {
           if (this.leftTurnDone) {
@@ -72,13 +76,13 @@ board.on('ready', function () {
     right: {
       name: 'right',
       getNextState: function (leftHit, rightHit) {
-        if (leftHit && rightHit) {
+        if (isLineFollow && leftHit && rightHit) {
           return STATE.acuteEscape
         }
         if (leftHit) {
           this.rightTurnDone = false
           this.turningRight = false
-          return STATE.left
+          return courseLeft
         }
         if (!rightHit) {
           if (this.rightTurnDone) {
@@ -99,14 +103,14 @@ board.on('ready', function () {
     forward: {
       name: 'forward',
       getNextState: function (leftHit, rightHit) {
-        if (leftHit && rightHit) {
+        if (isLineFollow && leftHit && rightHit) {
           return STATE.acuteEscape
         }
         if (leftHit) {
-          return STATE.left
+          return courseLeft
         }
         if (rightHit) {
-          return STATE.right
+          return courseRight
         }
       },
       go: () => drive.moveForward(FORWARD_SPEED)
@@ -114,7 +118,7 @@ board.on('ready', function () {
     backward: {
       name: 'backward',
       getNextState: function (leftHit, rightHit) {
-        if (leftHit && rightHit) {
+        if (isLineFollow && leftHit && rightHit) {
           return STATE.acuteEscape
         }
         if (!leftHit && !rightHit) {
@@ -165,7 +169,7 @@ board.on('ready', function () {
     stop: {
       name: 'stop',
       getNextState: function (leftHit, rightHit) {
-        if (leftHit && rightHit) {
+        if (isLineFollow && leftHit && rightHit) {
           return STATE.acuteEscape
         }
         if (!leftHit && !rightHit) {
@@ -183,6 +187,10 @@ board.on('ready', function () {
 
   let newState = null
   let state = STATE.pause
+
+  courseLeft = isLineFollow ? STATE.left : STATE.right
+  courseRight = isLineFollow ? STATE.right : STATE.left
+
   state.go()
   function mainLoop () {
     const leftHit = leftLight.level >= LIGHT_THRESHOLD
