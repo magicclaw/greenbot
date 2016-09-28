@@ -17,7 +17,7 @@ board.on('ready', function () {
   })
 
   const TURN_SPEED = 0.35
-  const FORWARD_SPEED = .20 // .2 is the minimum; .26 seems to work well; .3 seems to be an upper limit on this to detect the line in time to change directions
+  const FORWARD_SPEED = .22 // .2 is the minimum; .26 seems to work well; .3 seems to be an upper limit on this to detect the line in time to change directions
   const LIGHT_THRESHOLD = .9
   const TURN_MINIMUM_MS = 100
   const STARTUP_WAIT_TIME = 500
@@ -46,10 +46,7 @@ board.on('ready', function () {
       name: 'left',
       getNextState: function (leftHit, rightHit) {
         if (leftHit && rightHit) {
-          if (acuteEscapeDir !== STATE.left) {
-            return acuteEscapeDir
-          }
-          // keep turning
+          return STATE.acuteEscape
         }
         if (rightHit) {
           this.leftTurnDone = false
@@ -76,10 +73,7 @@ board.on('ready', function () {
       name: 'right',
       getNextState: function (leftHit, rightHit) {
         if (leftHit && rightHit) {
-          if (acuteEscapeDir !== STATE.right) {
-            return acuteEscapeDir
-          }
-          return acuteEscapeDir
+          return STATE.acuteEscape
         }
         if (leftHit) {
           this.rightTurnDone = false
@@ -106,14 +100,12 @@ board.on('ready', function () {
       name: 'forward',
       getNextState: function (leftHit, rightHit) {
         if (leftHit && rightHit) {
-          return acuteEscapeDir
+          return STATE.acuteEscape
         }
         if (leftHit) {
-          acuteEscapeDir = STATE.left
           return STATE.left
         }
         if (rightHit) {
-          acuteEscapeDir = STATE.right
           return STATE.right
         }
       },
@@ -123,7 +115,7 @@ board.on('ready', function () {
       name: 'backward',
       getNextState: function (leftHit, rightHit) {
         if (leftHit && rightHit) {
-          return acuteEscapeDir
+          return STATE.acuteEscape
         }
         if (!leftHit && !rightHit) {
           return STATE.stop
@@ -131,11 +123,50 @@ board.on('ready', function () {
       },
       go: () => drive.moveBackward(FORWARD_SPEED)
     },
+    acuteEscapeBackward: {
+      name: 'acuteEscapeBackward',
+      getNextState: function (leftHit, rightHit) {
+        // first one to clear is the acute escape angle
+        if (leftHit && !rightHit) {
+          return STATE.acuteEscapeRight
+        }
+        if (rightHit && !leftHit) {
+          return STATE.acuteEscapeLeft
+        }
+      },
+      go: () => drive.moveBackward(FORWARD_SPEED)
+    },
+    acuteEscapeLeft: {
+      name: 'acuteEscapeLeft',
+      getNextState: function (leftHit, rightHit) {
+        if (leftHit) {
+          return STATE.left
+        }
+      },
+      go: () => drive.turnLeft(TURN_SPEED)
+    },
+    acuteEscapeRight: {
+      name: 'acuteEscapeRight',
+      getNextState: function (leftHit, rightHit) {
+        if (rightHit) {
+          return STATE.right
+        }
+      },
+      go: () => drive.turnRight(TURN_SPEED)
+    },
+    acuteEscape: {
+      name: 'acuteEscape',
+      getNextState: function (leftHit, rightHit) {
+        // back up until one of the sensors clears
+        // return STATE.left
+      },
+      go: () => drive.stop()
+    },
     stop: {
       name: 'stop',
       getNextState: function (leftHit, rightHit) {
         if (leftHit && rightHit) {
-          return acuteEscapeDir
+          return STATE.acuteEscape
         }
         if (!leftHit && !rightHit) {
           return STATE.forward
@@ -152,7 +183,6 @@ board.on('ready', function () {
 
   let newState = null
   let state = STATE.pause
-  let acuteEscapeDir = STATE.left
   state.go()
   function mainLoop () {
     const leftHit = leftLight.level >= LIGHT_THRESHOLD
@@ -160,11 +190,11 @@ board.on('ready', function () {
 
     newState = state.getNextState(leftHit, rightHit)
     if (newState) {
+      console.log(`leftLight(${leftLight.level}), rightLight(${rightLight.level})`)
       // console.log(`leftHit(${leftHit}), rightHit(${rightHit})`)
-      // console.log(`leftLight(${leftLight.level}), rightLight(${rightLight.level})`)
       console.log(state.name + ' --> ' + newState.name)
       state = newState
-      state.go()
+      state.go(leftHit, rightHit)
     }
   }
 })
