@@ -13,6 +13,7 @@ board.on('ready', function () {
   const leftLight = new five.Light('b2')
   const toggle = new five.Switch('a6')
   const finishLineLight = new five.Light('a7')
+  const finishLED = new five.Led('b7')
 
   this.repl.inject({
     drive: drive,
@@ -25,12 +26,13 @@ board.on('ready', function () {
   const TURN_MINIMUM_MS = 100
   const STARTUP_WAIT_TIME = 500
 
-  this.loop(50, mainLoop)
+  // this.loop(50, mainLoop)
 
   let courseLeft
   let courseRight
   let isLineFollow // = toggle.isClosed
-  
+  let finishDetected = false
+
   toggle.on('close', function () {
     console.log('Not the line follow course')
     isLineFollow = false
@@ -39,6 +41,10 @@ board.on('ready', function () {
   toggle.on('open', function () {
     console.log('Line Follow Course')
     isLineFollow = true
+  })
+
+  finishLineLight.on('change', function () {
+    finishDetected = finishLineLight.level > 0.93
   })
 
   const STATE = {
@@ -209,15 +215,18 @@ board.on('ready', function () {
     courseRight = isLineFollow ? STATE.right : STATE.left
     const leftHit = leftLight.level >= LIGHT_THRESHOLD
     const rightHit = rightLight.level >= LIGHT_THRESHOLD
-    finishLineLight.on('change', () => console.log(finishLineLight.level))
     // console.log(`leftLight(${leftLight.level}), rightLight(${rightLight.level})`)
+    if (finishDetected) {
+      drive.stop()
+      return
+    }
 
     newState = state.getNextState(leftHit, rightHit)
     if (newState) {
       // console.log(`leftHit(${leftHit}), rightHit(${rightHit})`)
-      //console.log(state.name + ' --> ' + newState.name)
+      // console.log(state.name + ' --> ' + newState.name)
       state = newState
-      //state.go(leftHit, rightHit)
+      state.go(leftHit, rightHit)
     }
   }
 })
