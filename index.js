@@ -1,4 +1,4 @@
-"use strict"
+'use strict'
 
 const five = require('johnny-five')
 const Tessel = require('tessel-io')
@@ -26,7 +26,7 @@ board.on('ready', function () {
   const TURN_MINIMUM_MS = 100
   const STARTUP_WAIT_TIME = 500
 
-  // this.loop(50, mainLoop)
+  this.loop(50, mainLoop)
 
   let courseLeft
   let courseRight
@@ -218,7 +218,10 @@ board.on('ready', function () {
     // console.log(`leftLight(${leftLight.level}), rightLight(${rightLight.level})`)
     if (finishDetected) {
       drive.stop()
+      finishLED.on()
       return
+    } else {
+      finishLED.off()
     }
 
     newState = state.getNextState(leftHit, rightHit)
