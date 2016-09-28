@@ -26,29 +26,43 @@ board.on('ready', function () {
   const TURN_MINIMUM_MS = 100
   const STARTUP_WAIT_TIME = 500
 
-  this.loop(50, mainLoop)
-
   let courseLeft
   let courseRight
   let isLineFollow // = toggle.isClosed
   let finishDetected = false
-  let finishDetectionBaseline = 1
+//  let finishDetectionBaseline = 1
 
   toggle.on('close', function () {
     console.log('Not the line follow course')
+    finishDetected = false
     isLineFollow = false
   })
 
   toggle.on('open', function () {
     console.log('Line Follow Course')
+    finishDetected = false
     isLineFollow = true
   })
 
   finishLineLight.on('change', function () {
     console.log(finishLineLight.level)
-    finishDetected = finishLineLight.level >= (finishDetectionBaseline + 0.04)
+    // finishDetected = finishLineLight.level >= (finishDetectionBaseline + 0.04)
+    finishDetected = finishLineLight.level >= 0.93
   })
 
+  this.on('message', function (event) {
+  /*
+    Event {
+      type: "info"|"warn"|"fail",
+      timestamp: Time of event in milliseconds,
+      class: name of relevant component class,
+      message: message [+ ...detail]
+    }
+  */
+    console.log('Received a %s message, from %s, reporting: %s', event.type, event.class, event.message)
+  })
+
+  // this.loop(50, mainLoop)
   const STATE = {
     pause: {
       name: 'pause',
@@ -60,7 +74,7 @@ board.on('ready', function () {
         if (!this.pausing) {
           this.pausing = true
           board.wait(STARTUP_WAIT_TIME, () => {
-            finishDetectionBaseline = finishLineLight.level
+            //finishDetectionBaseline = finishLineLight.level
             this.pausing = false
             this.pauseDone = true
           })
@@ -224,7 +238,7 @@ board.on('ready', function () {
       drive.stop()
       finishLED.on()
       return
-    } else {
+    } else if (!finishDetected) {
       finishLED.off()
     }
 
