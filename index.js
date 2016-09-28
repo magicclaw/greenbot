@@ -196,10 +196,10 @@ board.on('ready', function () {
   function mainLoop () {
     const leftHit = leftLight.level >= LIGHT_THRESHOLD
     const rightHit = rightLight.level >= LIGHT_THRESHOLD
+    console.log(`leftLight(${leftLight.level}), rightLight(${rightLight.level})`)
 
     newState = state.getNextState(leftHit, rightHit)
     if (newState) {
-      console.log(`leftLight(${leftLight.level}), rightLight(${rightLight.level})`)
       // console.log(`leftHit(${leftHit}), rightHit(${rightHit})`)
       console.log(state.name + ' --> ' + newState.name)
       state = newState
